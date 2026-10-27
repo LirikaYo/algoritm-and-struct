@@ -1,0 +1,280 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
+#include <ctime>
+#include <locale>
+
+using namespace std;
+
+template <typename T>
+void input(T& n, string s) {
+    cout << s;
+    cin >> n;
+}
+
+template <typename T>
+void output(T n, string s) {
+    cout << s << n << endl;
+}
+
+struct Resident {
+    string fio;        
+    string country;    
+    string city;       
+    string street;     
+    string house;      
+    string flat;       
+    int satisfaction = 0;  
+};
+
+void printOneResident(const Resident& r) {
+    cout << r.fio << "; " << r.country << "; " << r.city << "; "
+        << r.street << "; " << r.house << "; " << r.flat << "; "
+        << r.satisfaction << endl;
+}
+
+void printResidents(Resident* x, int N) {
+    if (N == 0) {
+        cout << "Записей нет" << endl;
+        return;
+    }
+    for (int i = 0; i < N; i++) {
+        cout << i + 1 << ") ";
+        printOneResident(x[i]);
+    }
+}
+
+Resident* newMassiv(int N) {
+    return new Resident[N];
+}
+
+void deleteMassiv(Resident*& x) {
+    delete[] x;
+    x = nullptr;
+}
+
+Resident setOneResident() {
+    Resident r;
+    cin.ignore();  
+    cout << "ФИО: ";               getline(cin, r.fio);
+    cout << "Страна: ";            getline(cin, r.country);
+    cout << "Населённый пункт: ";  getline(cin, r.city);
+    cout << "Улица: ";             getline(cin, r.street);
+    cout << "Дом: ";               getline(cin, r.house);
+    cout << "Квартира: ";          getline(cin, r.flat);
+    input(r.satisfaction, "Удовлетворённость жильём (баллы): ");
+    return r;
+}
+
+void addRecords(Resident*& x, int& N, int add) {
+    Resident* newX = newMassiv(N + add);
+    for (int i = 0; i < N; i++)
+        newX[i] = x[i];
+    for (int i = 0; i < add; i++) {
+        cout << "\n--- Запись " << N + i + 1 << " ---" << endl;
+        newX[N + i] = setOneResident();
+    }
+    deleteMassiv(x);
+    x = newX;
+    N += add;
+}
+
+void deleteRecords(Resident*& x, int& N) {
+    if (N == 0) {
+        cout << "Записей нет" << endl;
+        return;
+    }
+    deleteMassiv(x);
+    N = 0;
+    cout << "Записи удалены" << endl;
+}
+
+void deleteOneRecord(Resident*& x, int& N) {
+    if (N == 0) { cout << "Записей нет" << endl; return; }
+    printResidents(x, N);
+    int idx;
+    input(idx, "Введите номер записи для удаления: ");
+    if (idx < 1 || idx > N) { cout << "Неверный номер" << endl; return; }
+
+    Resident* newX = newMassiv(N - 1);
+    int k = 0;
+    for (int i = 0; i < N; i++) {
+        if (i != idx - 1) newX[k++] = x[i];
+    }
+    deleteMassiv(x);
+    x = newX;
+    N--;
+    cout << "Запись удалена" << endl;
+}
+
+void editRecord(Resident* x, int N) {
+    if (N == 0) { cout << "Записей нет" << endl; return; }
+    printResidents(x, N);
+    int idx;
+    input(idx, "Введите номер записи для редактирования: ");
+    if (idx < 1 || idx > N) { cout << "Неверный номер" << endl; return; }
+
+    Resident& r = x[idx - 1];
+    cin.ignore();
+    cout << "Новое ФИО (Enter — оставить): ";
+    string s; getline(cin, s); if (!s.empty()) r.fio = s;
+    cout << "Новая страна (Enter — оставить): ";
+    getline(cin, s); if (!s.empty()) r.country = s;
+    cout << "Новый населённый пункт (Enter — оставить): ";
+    getline(cin, s); if (!s.empty()) r.city = s;
+    cout << "Новая улица (Enter — оставить): ";
+    getline(cin, s); if (!s.empty()) r.street = s;
+    cout << "Новый дом (Enter — оставить): ";
+    getline(cin, s); if (!s.empty()) r.house = s;
+    cout << "Новая квартира (Enter — оставить): ";
+    getline(cin, s); if (!s.empty()) r.flat = s;
+    cout << "Новая удовлетворённость (Enter — оставить): ";
+    getline(cin, s);
+    if (!s.empty()) r.satisfaction = stoi(s);
+    cout << "Запись обновлена" << endl;
+}
+
+void findData(Resident* x, int N) {
+    if (N == 0) { cout << "Записей нет" << endl; return; }
+    cin.ignore();
+    cout << "Введите ФИО для поиска (Enter — пропустить): ";
+    string fio; getline(cin, fio);
+    cout << "Введите населённый пункт (Enter — пропустить): ";
+    string city; getline(cin, city);
+
+    bool found = false;
+    for (int i = 0; i < N; i++) {
+        bool okFio = fio.empty() || x[i].fio == fio;
+        bool okCity = city.empty() || x[i].city == city;
+        if (okFio && okCity) {
+            printOneResident(x[i]);
+            found = true;
+        }
+    }
+    if (!found) cout << "Ничего не найдено" << endl;
+}
+
+void tmpRecords(Resident& a, Resident& b) {
+    Resident t = a; a = b; b = t;
+}
+
+void sortByFio(Resident* x, int N) {
+    if (N == 0) { cout << "Записей нет" << endl; return; }
+    bool flag;
+    for (int i = 0; i < N; i++) {
+        flag = true;
+        for (int j = 0; j < N - 1; j++) {
+            if (x[j].fio > x[j + 1].fio) {
+                flag = false;
+                tmpRecords(x[j], x[j + 1]);
+            }
+        }
+        if (flag) break;
+    }
+    cout << "\n=== Отсортированные по ФИО записи ===" << endl;
+    printResidents(x, N);
+}
+
+void saveFile(Resident* x, int N, const string& file) {
+    ofstream f(file);
+    if (!f.is_open()) { cout << "Файл не открыт для записи..." << endl; return; }
+    for (int i = 0; i < N; i++) {
+        f << x[i].fio << ';' << x[i].country << ';'
+            << x[i].city << ';' << x[i].street << ';'
+            << x[i].house << ';' << x[i].flat << ';'
+            << x[i].satisfaction << '\n';
+    }
+    f.close();
+}
+
+void loadFile(Resident*& x, int& N, const string& file) {
+    ifstream f(file);
+    if (!f.is_open()) { cout << "Файл не найден, начинаем с пустого списка" << endl; return; }
+
+    int count = 0;
+    string line;
+    while (getline(f, line)) if (!line.empty()) count++;
+    f.clear(); f.seekg(0);
+
+    if (count == 0) { f.close(); return; }
+
+    x = newMassiv(count);
+    N = 0;
+    while (getline(f, line)) {
+        if (line.empty()) continue;
+        stringstream ss(line);
+        string item;
+        Resident r;
+        getline(ss, r.fio, ';');
+        getline(ss, r.country, ';');
+        getline(ss, r.city, ';');
+        getline(ss, r.street, ';');
+        getline(ss, r.house, ';');
+        getline(ss, r.flat, ';');
+        getline(ss, item, ';');
+        r.satisfaction = stoi(item);
+        x[N++] = r;
+    }
+    f.close();
+    cout << "Загружено записей: " << N << endl;
+}
+
+void menu(const string& file) {
+    int num;
+    int N = 0;
+    Resident* x = nullptr;
+
+    loadFile(x, N, file);
+
+    do {
+        cout << "\n========== МЕНЮ ==========" << endl;
+        cout << "1. Добавить записи" << endl;
+        cout << "2. Показать все записи" << endl;
+        cout << "3. Удалить все записи" << endl;
+        cout << "4. Удалить одну запись" << endl;
+        cout << "5. Редактировать запись" << endl;
+        cout << "6. Сортировка по ФИО" << endl;
+        cout << "7. Поиск" << endl;
+        cout << "8. Сохранить в файл" << endl;
+        cout << "0. Выход" << endl;
+        cout << "Ваш выбор: ";
+        input(num, "");
+
+        switch (num) {
+        case 1: {
+            int add;
+            input(add, "Сколько записей добавить? ");
+            addRecords(x, N, add);
+            saveFile(x, N, file);
+            break;
+        }
+        case 2: printResidents(x, N); break;
+        case 3: deleteRecords(x, N); saveFile(x, N, file); break;
+        case 4: deleteOneRecord(x, N); saveFile(x, N, file); break;
+        case 5: editRecord(x, N); saveFile(x, N, file); break;
+        case 6: sortByFio(x, N); saveFile(x, N, file); break;
+        case 7: findData(x, N); break;
+        case 8: saveFile(x, N, file); cout << "Сохранено" << endl; break;
+        case 0:
+            cout << "Выход" << endl;
+            saveFile(x, N, file);
+            deleteMassiv(x);
+            break;
+        default: cout << "Неверный выбор" << endl;
+        }
+    } while (num != 0);
+}
+
+int main() {
+    system("chcp 1251 > nul");
+    setlocale(LC_ALL, "Russian");
+    srand((unsigned)time(nullptr));
+
+    string path = "D:\\333\\";
+    string name = "residents.txt";   
+    string filename = path + name;
+
+    menu(filename);
+    return 0;
+}
