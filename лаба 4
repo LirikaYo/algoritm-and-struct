@@ -1,0 +1,125 @@
+#include <iostream>
+#include <string>
+#include <locale>
+#include <random>
+
+template<typename example>
+void vvod(example& x, std::string s){
+    std::cout << s;
+    std::cin >> x;
+}
+
+void generateMass(int* arr, int size){
+    std::cout << "Генерация массива, размер 100000 элементов.";
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<int> dist(-2000000000, 2000000000);
+    for (int i = 0; i < size; i++){
+        arr[i] = dist(gen);
+    }
+}
+
+void deleteMass(int*& arr) {
+    std::cout << "Массив удален.";
+    delete[] arr;
+    arr = nullptr;
+}
+
+void copyMass(int* arr1, int* arr2, int size){
+    for (int i = 0; i < size; i++){
+        arr2[i] = arr1[i];
+    }
+}
+
+void sortOne(int* arr, int size){
+    
+}
+
+void sortTwo(int* arr, int size){
+    
+}
+
+void sortThree(int* arr, int size){
+    
+}
+
+void generateAscending(int* arr, int size) {
+    for (int i = 0; i < size; i++) {
+        arr[i] = i;
+    }
+}
+
+void generateDescending(int* arr, int size) {
+    for (int i = 1; i < size; i++) {
+        arr[i] = size - i;
+    }
+}
+
+void mainMenu(){
+    const int size = 100000;
+    int* data = new int[size];
+    int* tempData = new int[size];
+    deleteMass(data);
+    deleteMass(tempData);
+    int menu;
+    do {
+        std::cout << "\n---Меню---" << std::endl;
+        std::cout << "1. Создать массив." << std::endl;
+        std::cout << "2. Сортировка Пузырьком." << std::endl;
+        std::cout << "3. Сортировка Выбором." << std::endl;
+        std::cout << "4. Сортировка Шелла." << std::endl;
+        std::cout << "5. Генерация от 0 до 100000." << std::endl;
+        std::cout << "6. Генерация от 100000 до 0." << std::endl;
+        std::cout << "7. Удалить массив." << std::endl;
+        ::cout << "0. Выход." << std::endl;
+        std::cout << "Выбери действие: ";
+        std::cin >> menu;
+        
+        switch (menu) {
+            case 1: {
+                generateMass(data, size);
+                break;
+            }
+            case 2: {
+                sortOne();
+                break;
+            }
+            case 3: {
+                sortTwo();
+                break;
+            }
+            case 4: {
+                sortThree();
+                break;
+            }
+            case 5: {
+                generateAscending(data, size);
+                break;
+            }
+            case 6: {
+                generateDescending(data, size);
+                break;
+            }
+            case 7: {
+                deleteMass(data);
+                break;
+            }
+            case 0: {
+                std::cout << "Выход из меню..." << std::endl;
+                break;
+            }
+            default: {
+                std::cout << "Неверный выбор." << std::endl;
+            }
+        }
+    } while (menu != 0);
+}
+
+
+int main(){
+    setlocale(LC_ALL, "RU");
+    
+    mainMenu();
+    
+    return 0;
+}
