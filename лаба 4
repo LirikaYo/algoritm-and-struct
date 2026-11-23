@@ -109,12 +109,15 @@ void mainMenu() {
             break;
         }
         case 2: {
-            copyMass(data, tempData, size);
-            auto start = std::chrono::high_resolution_clock::now();
-            sortOne(tempData, size);
-            auto end = std::chrono::high_resolution_clock::now();
-            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-            std::cout << " Время сортировки: " << duration << " мкс." << std::endl;
+            if (menu == 1 || 5 || 6) {
+                copyMass(data, tempData, size);
+                auto start = std::chrono::high_resolution_clock::now();
+                sortOne(tempData, size);
+                auto end = std::chrono::high_resolution_clock::now();
+                auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+                std::cout << " Время сортировки: " << duration << " мкс." << std::endl;
+            }
+            std::cout << "Массив не был сгенерирован..." << std::endl;
             break;
         }
         case 3: {
