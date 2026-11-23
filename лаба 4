@@ -137,10 +137,12 @@ void mainMenu() {
         }
         case 5: {
             generateAscending(data, size);
+            std::cout << "Массив сгенерирован." << std::endl;
             break;
         }
         case 6: {
             generateDescending(data, size);
+            std::cout << "Массив сгенерирован." << std::endl;
             break;
         }
         case 0: {
