@@ -2,19 +2,20 @@
 #include <string>
 #include <locale>
 #include <random>
+#include <chrono>
 
 template<typename example>
-void vvod(example& x, std::string s){
+void vvod(example& x, std::string s) {
     std::cout << s;
     std::cin >> x;
 }
 
-void generateMass(int* arr, int size){
+void generateMass(int* arr, int size) {
     std::cout << "Генерация массива, размер 100000 элементов.";
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<int> dist(-2000000000, 2000000000);
-    for (int i = 0; i < size; i++){
+    for (int i = 0; i < size; i++) {
         arr[i] = dist(gen);
     }
 }
@@ -25,22 +26,52 @@ void deleteMass(int*& arr) {
     arr = nullptr;
 }
 
-void copyMass(int* arr1, int* arr2, int size){
-    for (int i = 0; i < size; i++){
+void copyMass(int* arr1, int* arr2, int size) {
+    for (int i = 0; i < size; i++) {
         arr2[i] = arr1[i];
     }
 }
 
-void sortOne(int* arr, int size){
-    
+void sortOne(int* arr, int size) {
+    for (int i = 0; i < size; i++) {
+        bool swapped = false;
+        for (int j = 0; j < size - i - 1; j++) {
+            if (arr[j] > arr[j + 1]) {
+                std::swap(arr[j], arr[j + 1]);
+                swapped = true;
+            }
+        }
+        if (!swapped) break;
+    }
 }
 
-void sortTwo(int* arr, int size){
-    
+void sortTwo(int* arr, int size) {
+    for (int i = 0; i < size - 1; i++) {
+        int minId = i;
+        for (int j = i + 1; j < size; j++) {
+            if (arr[j] < arr[minId]) {
+                minId = j;
+            }
+        }
+        if (minId != i) {
+            std::swap(arr[i], arr[minId]);
+        }
+    }
 }
 
-void sortThree(int* arr, int size){
-    
+void sortThree(int* arr, int size) {
+    for (int gap = size / 2; gap > 0; gap /= 2) {
+        for (int i = gap; i < size; ++i) {
+            int temp = arr[i];
+            int j = i;
+
+            while (j >= gap && arr[j - gap] > temp) {
+                arr[j] = arr[j - gap];
+                j -= gap;
+            }
+            arr[j] = temp;
+        }
+    }
 }
 
 void generateAscending(int* arr, int size) {
@@ -50,17 +81,15 @@ void generateAscending(int* arr, int size) {
 }
 
 void generateDescending(int* arr, int size) {
-    for (int i = 1; i < size; i++) {
+    for (int i = 0; i < size; i++) {
         arr[i] = size - i;
     }
 }
 
-void mainMenu(){
+void mainMenu() {
     const int size = 100000;
     int* data = new int[size];
     int* tempData = new int[size];
-    deleteMass(data);
-    deleteMass(tempData);
     int menu;
     do {
         std::cout << "\n---Меню---" << std::endl;
@@ -70,56 +99,68 @@ void mainMenu(){
         std::cout << "4. Сортировка Шелла." << std::endl;
         std::cout << "5. Генерация от 0 до 100000." << std::endl;
         std::cout << "6. Генерация от 100000 до 0." << std::endl;
-        std::cout << "7. Удалить массив." << std::endl;
-        ::cout << "0. Выход." << std::endl;
+        std::cout << "0. Выход." << std::endl;
         std::cout << "Выбери действие: ";
         std::cin >> menu;
-        
+
         switch (menu) {
-            case 1: {
-                generateMass(data, size);
-                break;
-            }
-            case 2: {
-                sortOne();
-                break;
-            }
-            case 3: {
-                sortTwo();
-                break;
-            }
-            case 4: {
-                sortThree();
-                break;
-            }
-            case 5: {
-                generateAscending(data, size);
-                break;
-            }
-            case 6: {
-                generateDescending(data, size);
-                break;
-            }
-            case 7: {
-                deleteMass(data);
-                break;
-            }
-            case 0: {
-                std::cout << "Выход из меню..." << std::endl;
-                break;
-            }
-            default: {
-                std::cout << "Неверный выбор." << std::endl;
-            }
+        case 1: {
+            generateMass(data, size);
+            break;
+        }
+        case 2: {
+            copyMass(data, tempData, size);
+            auto start = std::chrono::high_resolution_clock::now();
+            sortOne(tempData, size);
+            auto end = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+            std::cout << " Время сортировки: " << duration << " мкс." << std::endl;
+            break;
+        }
+        case 3: {
+            copyMass(data, tempData, size);
+            auto start = std::chrono::high_resolution_clock::now();
+            sortTwo(tempData, size);
+            auto end = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+            std::cout << " Время сортировки: " << duration << " мкс." << std::endl;
+            break;
+        }
+        case 4: {         
+            copyMass(data, tempData, size);
+            auto start = std::chrono::high_resolution_clock::now();
+            sortThree(tempData, size);
+            auto end = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+            std::cout << " Время сортировки: " << duration << " мкс." << std::endl;
+            break;
+        }
+        case 5: {
+            generateAscending(data, size);
+            break;
+        }
+        case 6: {
+            generateDescending(data, size);
+            break;
+        }
+        case 0: {
+            std::cout << "Выход из меню..." << std::endl;
+            break;
+        }
+        default: {
+            std::cout << "Неверный выбор." << std::endl;
+        }
         }
     } while (menu != 0);
+    deleteMass(data);
+    deleteMass(tempData);
 }
 
 
-int main(){
+int main() {
     setlocale(LC_ALL, "RU");
-    
+
     mainMenu();
-    
+
     return 0;
 }
