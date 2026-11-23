@@ -91,6 +91,8 @@ void mainMenu() {
     int* data = new int[size];
     int* tempData = new int[size];
     int menu;
+    bool ready = false;
+    
     do {
         std::cout << "\n---Меню---" << std::endl;
         std::cout << "1. Создать массив." << std::endl;
@@ -106,10 +108,11 @@ void mainMenu() {
         switch (menu) {
         case 1: {
             generateMass(data, size);
+            ready = true;
             break;
         }
         case 2: {
-            if (menu == 1 || 5 || 6) {
+            if (ready) {
                 copyMass(data, tempData, size);
                 auto start = std::chrono::high_resolution_clock::now();
                 sortOne(tempData, size);
@@ -117,34 +120,50 @@ void mainMenu() {
                 auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
                 std::cout << " Время сортировки: " << duration << " мкс." << std::endl;
             }
-            std::cout << "Массив не был сгенерирован..." << std::endl;
+            else {
+                std::cout << "Массив не сгенерирован." << std::endl;
+            }
+
             break;
         }
         case 3: {
-            copyMass(data, tempData, size);
-            auto start = std::chrono::high_resolution_clock::now();
-            sortTwo(tempData, size);
-            auto end = std::chrono::high_resolution_clock::now();
-            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-            std::cout << " Время сортировки: " << duration << " мкс." << std::endl;
+            if (ready) {
+                copyMass(data, tempData, size);
+                auto start = std::chrono::high_resolution_clock::now();
+                sortTwo(tempData, size);
+                auto end = std::chrono::high_resolution_clock::now();
+                auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+                std::cout << " Время сортировки: " << duration << " мкс." << std::endl;
+            }
+            else {
+                std::cout << "Массив не сгенерирован." << std::endl;
+            }
+
             break;
         }
-        case 4: {         
-            copyMass(data, tempData, size);
-            auto start = std::chrono::high_resolution_clock::now();
-            sortThree(tempData, size);
-            auto end = std::chrono::high_resolution_clock::now();
-            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-            std::cout << " Время сортировки: " << duration << " мкс." << std::endl;
+        case 4: {
+            if (ready) {
+                copyMass(data, tempData, size);
+                auto start = std::chrono::high_resolution_clock::now();
+                sortThree(tempData, size);
+                auto end = std::chrono::high_resolution_clock::now();
+                auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+                std::cout << " Время сортировки: " << duration << " мкс." << std::endl;
+            }
+            else {
+                std::cout << "Массив не сгенерирован." << std::endl;
+            }
             break;
         }
         case 5: {
             generateAscending(data, size);
+            ready = true;
             std::cout << "Массив сгенерирован." << std::endl;
             break;
         }
         case 6: {
             generateDescending(data, size);
+            ready = true;
             std::cout << "Массив сгенерирован." << std::endl;
             break;
         }
