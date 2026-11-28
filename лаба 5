@@ -1,0 +1,273 @@
+#include <iostream>
+#include <locale>
+#include <random>
+#include <chrono>
+#include <iomanip>
+
+void generateMass(int* arr, int size) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<int> dist(-200000, 200000);
+    for (int i = 0; i < size; i++) {
+        arr[i] = dist(gen);
+    }
+    std::cout << "Массив на " << size << " элементов сгенерирован.\n";
+}
+
+void copyMass(const int* source, int* dest, int size) {
+    for (int i = 0; i < size; i++) {
+        dest[i] = source[i];
+    }
+}
+
+void deleteMass(int*& arr) {
+    delete[] arr;
+    arr = nullptr;
+}
+
+int linPoisk(const int* arr, int size, int target) {
+    for (int i = 0; i < size; i++) {
+        if (arr[i] == target) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+void sortMass(int* arr, int size) {
+    for (int gap = size / 2; gap > 0; gap /= 2) {
+        for (int i = gap; i < size; ++i) {
+            int temp = arr[i];
+            int j = i;
+            while (j >= gap && arr[j - gap] > temp) {
+                arr[j] = arr[j - gap];
+                j -= gap;
+            }
+            arr[j] = temp;
+        }
+    }
+}
+
+int binarPoisk(const int* arr, int size, int target) {
+    int left = 0;
+    int right = size - 1;
+    int result = -1;
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        if (arr[mid] == target) {
+            result = mid;
+            right = mid - 1; 
+        }
+        else if (arr[mid] < target) {
+            left = mid + 1;
+        }
+        else {
+            right = mid - 1;
+        }
+    }
+    return result;
+}
+
+int interPoisk(const int* arr, int size, int target) {
+    int low = 0;
+    int high = size - 1;
+    while (low <= high && target >= arr[low] && target <= arr[high]) {
+        if (arr[low] == arr[high]) {
+            if (arr[low] == target) return low;
+            break;
+        }
+        int pos = low + static_cast<int>((static_cast<long long>(target - arr[low]) * (high - low)) / (arr[high] - arr[low]));
+        if (arr[pos] == target) {
+            while (pos > 0 && arr[pos - 1] == target) {
+                pos--;
+            }
+            return pos;
+        }
+        if (arr[pos] < target) {
+            low = pos + 1;
+        }
+        else {
+            high = pos - 1;
+        }
+    }
+    return -1;
+}
+
+int spacePoisk(const int* arr, int size, int target, int step) {
+    int prev = 0;
+    int curr = 0;
+    while (curr < size && arr[curr] < target) {
+        prev = curr;
+        curr += step;
+    }
+    int limit = (curr < size) ? curr : size - 1;
+    for (int i = prev; i <= limit; i++) {
+        if (arr[i] == target) {
+            return i;
+        }
+        if (arr[i] > target) {
+            break;
+        }
+    }
+    return -1;
+}
+
+void menu() {
+    const int size = 100000;
+    const int attempts = 100;
+    int* data = new int[size];       
+    int* sortedData = new int[size]; 
+    int targets[attempts];           
+
+    int choice;
+    bool isGenerated = false;
+    bool isSorted = false;
+
+    long long timeSort = 0;
+    long long timeLin = 0;
+    long long timeBin = 0;
+    long long timeInter = 0;
+    long long timeJump = 0;
+
+    int jumpStep = 5 + 4;
+
+    do {
+        std::cout << "\n--- Меню ---\n";
+        std::cout << "1. Создать массив\n";
+        std::cout << "2. Линейный поиск\n";
+        std::cout << "3. Сортировка Шелла\n";
+        std::cout << "4. Бинарный поиск\n";
+        std::cout << "5. Интерполяционный поиск\n";
+        std::cout << "6. Прыжковый поиск (шаг = " << jumpStep << ")\n";
+        std::cout << "7. Сравнительная таблица результатов\n";
+        std::cout << "0. Выход\n";
+        std::cout << "Выбери действие: ";
+        std::cin >> choice;
+
+        switch (choice) {
+        case 1: {
+            generateMass(data, size);
+            std::random_device rd;
+            std::mt19937 gen(rd());
+            std::uniform_int_distribution<int> dist(-200000, 200000); // числа которые будет искать 
+            for (int i = 0; i < attempts; i++) {
+                targets[i] = dist(gen);
+            }
+            isGenerated = true;
+            isSorted = false;
+            timeSort = timeLin = timeBin = timeInter = timeJump = 0;
+            break;
+        }
+        case 2: {
+            if (!isGenerated) {
+                std::cout << "Сначала сгенерируйте массив.\n";
+                break;
+            }
+            timeLin = 0;
+            int foundCount = 0;
+            for (int i = 0; i < attempts; i++) {
+                auto start = std::chrono::high_resolution_clock::now();
+                int idx = linPoisk(data, size, targets[i]);
+                auto end = std::chrono::high_resolution_clock::now();
+                timeLin += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+                if (idx != -1) foundCount++;
+            }
+            std::cout << "Линейный поиск завершен. Найдено элементов: " << foundCount << " из " << attempts << ".\n";
+            std::cout << "Общее время (100 попыток): " << timeLin / 1000.0 << " мкс (" << timeLin << " нс).\n";
+            break;
+        }
+        case 3: {
+            if (!isGenerated) {
+                std::cout << "Сначала сгенерируйте массив (пункт 1)!\n";
+                break;
+            }
+            copyMass(data, sortedData, size);
+            auto start = std::chrono::high_resolution_clock::now();
+            sortMass(sortedData, size);
+            auto end = std::chrono::high_resolution_clock::now();
+            timeSort = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+            isSorted = true;
+            std::cout << "Сортировка завершена. Время сортировки: " << timeSort / 1000.0 << " мкс.\n";
+            break;
+        }
+        case 4: {
+            if (!isSorted) {
+                std::cout << "Сначала отсортируйте массив (пункт 3)!\n";
+                break;
+            }
+            timeBin = 0;
+            int foundCount = 0;
+            for (int i = 0; i < attempts; i++) {
+                auto start = std::chrono::high_resolution_clock::now();
+                int idx = binarPoisk(sortedData, size, targets[i]);
+                auto end = std::chrono::high_resolution_clock::now();
+                timeBin += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+                if (idx != -1) foundCount++;
+            }
+            std::cout << "Бинарный поиск завершен. Найдено: " << foundCount << " из " << attempts << ".\n";
+            std::cout << "Общее время (100 попыток): " << timeBin / 1000.0 << " мкс (" << timeBin << " нс).\n";
+            break;
+        }
+        case 5: {
+            if (!isSorted) {
+                std::cout << "Сначала отсортируйте массив (пункт 3)!\n";
+                break;
+            }
+            timeInter = 0;
+            int foundCount = 0;
+            for (int i = 0; i < attempts; i++) {
+                auto start = std::chrono::high_resolution_clock::now();
+                int idx = interPoisk(sortedData, size, targets[i]);
+                auto end = std::chrono::high_resolution_clock::now();
+                timeInter += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+                if (idx != -1) foundCount++;
+            }
+            std::cout << "Интерполяционный поиск завершен. Найдено: " << foundCount << " из " << attempts << ".\n";
+            std::cout << "Общее время (100 попыток): " << timeInter / 1000.0 << " мкс (" << timeInter << " нс).\n";
+            break;
+        }
+        case 6: {
+            if (!isSorted) {
+                std::cout << "Сначала отсортируйте массив (пункт 3)!\n";
+                break;
+            }
+            timeJump = 0;
+            int foundCount = 0;
+            for (int i = 0; i < attempts; i++) {
+                auto start = std::chrono::high_resolution_clock::now();
+                int idx = spacePoisk(sortedData, size, targets[i], jumpStep);
+                auto end = std::chrono::high_resolution_clock::now();
+                timeJump += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+                if (idx != -1) foundCount++;
+            }
+            std::cout << "Прыжковый поиск завершен. Найдено: " << foundCount << " из " << attempts << ".\n";
+            std::cout << "Общее время (100 попыток): " << timeJump / 1000.0 << " мкс (" << timeJump << " нс).\n";
+            break;
+        }
+        case 7: {
+            std::cout << "\n=== СРАВНЕНИЕ РЕЗУЛЬТАТОВ (в микросекундах, мкс) ===\n";
+            std::cout << std::fixed << std::setprecision(2);
+            std::cout << "1. Линейный поиск (100 попыток):                      " << timeLin / 1000.0 << " мкс\n";
+            std::cout << "2. Сортировка + Бинарный поиск (100 попыток):         " << (timeSort + timeBin) / 1000.0
+                << " мкс (поиск: " << timeBin / 1000.0 << " мкс)\n";
+            std::cout << "3. Сортировка + Интерполяционный поиск (100 попыток): " << (timeSort + timeInter) / 1000.0
+                << " мкс (поиск: " << timeInter / 1000.0 << " мкс)\n";
+            std::cout << "4. Сортировка + Прыжковый поиск (100 попыток):        " << (timeSort + timeJump) / 1000.0
+                << " мкс (поиск: " << timeJump / 1000.0 << " мкс)\n";
+            break;
+        }
+        case 0:
+            std::cout << "Выход из программы...\n";
+            break;
+        default:
+            std::cout << "Неверный выбор.\n";
+}
+} while (choice != 0);
+deleteMass(data);
+deleteMass(sortedData);
+}
+int main() {
+    setlocale(LC_ALL, "RU");
+    menu();
+    return 0;
+}
